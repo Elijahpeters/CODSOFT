@@ -1,0 +1,137 @@
+
+
+import pandas as pd
+
+from sklearn.model_selection import train_test_split
+
+from sklearn.linear_model import LogisticRegression
+
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+#Load the titanic dataset
+
+
+
+df = pd.read_csv(r'C:/Users/HP PC/Desktop/blue/titanic.csv')
+
+print(" First ten values:\n", df.head(10))
+print(" \n Statistical Values of the dataset:\n", df.describe())
+
+print ("\nDataset With missing values from Row 1-10:\n", df.iloc[0:10].isnull())
+
+print(df. isnull().sum())
+
+#Drop rows with missing Embarked values
+
+df= df.dropna(subset=['Embarked'])
+
+#Fill missing 'Age' values with the median age
+
+
+df['Age']= df['Age'].fillna(df['Age'].median())
+              
+ #fill missing cabin values with uknown 
+
+df['Cabin'] = df['Cabin'].fillna('Unknown')
+
+
+#convert sex and embarked to numerical values
+
+df['Sex']= df['Sex'].map({'male':0, 'female': 1})
+df['Embarked']= df['Embarked'].map({'C':0, 'Q': 1, 'S': 2})
+
+
+#Drop irrelevant columns
+
+
+df=df.drop(columns=['Name', 'Ticket', 'Cabin', 'PassengerId'])
+
+
+#Select features and target variable
+
+features= ['Pclass', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked']
+
+X=df[features]
+y=df['Survived']
+
+
+#Split the data
+
+X_train, X_test, y_train, y_test= train_test_split(X, y, test_size=0.2, random_state=42)
+
+
+
+#Create and train the model
+
+
+model=LogisticRegression(max_iter=200)
+
+model.fit(X_train, y_train)
+
+#make Predictions
+y_pred=model.predict(X_test)
+
+accuracy=accuracy_score(y_test, y_pred)
+
+conf_matrix= confusion_matrix(y_test, y_pred)
+
+class_report= classification_report(y_test, y_pred)
+
+
+#Count the number of survivors 
+
+
+
+
+print (f"\n Accuracy:{accuracy: .2f}")
+
+print ("Confusion Matrix : \n ", conf_matrix)
+print("Classification Report : \n", class_report)              
+
+
+
+#Couunt the number of predicted survivors
+
+survivors=sum(y_pred)
+non_survivors= len(y_pred)-survivors
+
+print(f'Number Of predicted survivors: {survivors}')
+
+
+labels = ['Survived', 'Did Not Survive']
+counts= [survivors, non_survivors]
+
+
+plt.bar(labels, counts, color=['green', 'red'])
+
+plt.title('Predicted number of survivors and non-survivors')
+
+plt.ylabel('Number of Passengers')
+plt.xlabel('Outcome')
+
+plt.show()
+
+
+#Plot confusion matrix using seaborn
+
+
+plt.figure(figsize=(8, 6))
+
+sns.heatmap(conf_matrix, annot=True, fmt= 'd', cmap='Blues',
+xticklabels=['Predicted Non_Survived', 'Predicted Survived'],
+yticklabels=['Actual Non_Survived', 'Actual Survived'])
+
+plt.title('Confusion Matrix')
+plt.ylabel('Actual')
+plt.xlabel('Predicted')
+plt.show()
+
+
+
+
+
+
+
+
